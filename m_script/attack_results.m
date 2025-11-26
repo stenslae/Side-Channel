@@ -16,7 +16,7 @@ function attack_results(results, noisy_sets, t)
 
     % Dimensions
 
-    LEVELS  = {'Weak','Medium','Strong'};
+    LEVELS  = {'Weak','Medium','Strong','Strongest'};
     SNRs = noisy_sets(:,1);
 
     num_snr = length(SNRs);

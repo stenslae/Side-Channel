@@ -8,7 +8,7 @@ function results = main_emma(noisy_sets, fs, t)
     results = struct();
 
     %  Three scramble strengths for all SNR: weak, medium, strong
-    scr_level = {'Weak','Medium','Strong'};
+    scr_level = {'Weak','Medium','Strong','Strongest'};
 
     % Generate random seed from 1 to 1000
     max_seed = 1000;
@@ -57,7 +57,7 @@ function results = main_emma(noisy_sets, fs, t)
             best_score = -Inf;
             best_seed = 0;
             for test_seed = 1:max_seed
-                   for si = 1:length(scr_level)
+                   for si = 1:1%length(scr_level)
                         test_level = scr_level{si};
                         % Try descrambling with seed and guessed level
                         y = descramble_signal(x_scr, fs, test_seed, test_level);

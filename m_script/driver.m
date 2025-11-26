@@ -8,24 +8,24 @@ for idx = round(0.7*fs:0.7*fs:length(t))
     x(idx:idx+pulse_width-1) = 1;
 end
 
-% light noise
-x_noise = x + 0.1*randn(size(x));
+% Add Noise
+x_low     =  x + 0.1 * randn(size(x));
+x_medium  =  x + 0.3* randn(size(x));
+x_high    =  x + 0.5 * randn(size(x));
 
-% noise
-x_noisy = x + 0.5*randn(size(x));
-x_noisyy = x + 1*randn(size(x));
 
 % ==== TEST PULSAR ====
 
 
 noisy_sets = {
     'Clean', x;
-    'Small Noise', x_noise;
-    'Medium Noise',x_noisy;
-    'Large Noise',x_noisyy
+    'Small Noise', x_low;
+    'Medium Noise',x_medium;
+    'High Noise',x_high
 };
 
 results = struct();
 
 % THEN, CALL THIS FUNCTION
 results = main_emma(noisy_sets, fs, t);
+

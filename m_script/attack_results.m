@@ -311,6 +311,34 @@ function attack_results(results, noisy_sets, t)
     yticks(1:num_snr); yticklabels(SNRs);
     title('PSD Envelope Advantage'); xlabel('Scramble Level'); ylabel('SNR Level');
 
+    % ==== Seed Plots ====
+
+    % Bar: Top-1 vs Top-5 Accuracy per Scramble Level
+    figure;
+    bar([mean(seed_success(:,1)), mean(seed_success(:,2)), mean(seed_success(:,3));
+         mean(top5_hits(:,1)), mean(top5_hits(:,2)), mean(top5_hits(:,3))]');
+    legend({'Top-1','Top-5'});
+    xticklabels({'Weak','Medium','Strong'});
+    ylabel('Accuracy'); title('Seed Recovery Accuracy per Scramble Level');
+
+    % Bar: Accuracy per Noise/SNR Level
+    figure;
+    bar(mean(seed_success,2));
+    xticklabels(SNRs);
+    ylabel('Accuracy'); title('Seed Recovery Accuracy vs Noise Level'); xlabel('SNR Level');
+
+    % Heatmap of success grid
+    figure;
+    imagesc(seed_success); colorbar;
+    xticks(1:3); xticklabels({'Weak','Medium','Strong'});
+    yticks(1:num_snr); yticklabels(SNRs);
+    xlabel('Scramble Level'); ylabel('SNR Level'); title('Top-1 Seed Recovery Heatmap');
+
+    % Scatter: seed error
+    figure;
+    scatter(1:total_sets, seed_err(:));
+    xlabel('Set index'); ylabel('Seed Error'); title('Seed Error across All Sets'); grid on;
+
     fprintf("\n============================================================\n");
     fprintf("                     END OF SUMMARY\n");
     fprintf("============================================================\n\n");

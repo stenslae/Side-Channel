@@ -1,6 +1,6 @@
 # ⚡ Side‑Channel Analysis
 
-A MATLAB/Octave framework for experimenting with signal leakage, scrambling, and side‑channel attacks on simulated pulsar‑like repeated pulse signals.
+A MATLAB/Octave framework for experimenting with signal leakage, scrambling, and side‑channel attacks on simulated pulsar‑like repeated pulse signals: [Full Report](pulsar_report.md)
 
 ## 🎯 Project Purpose
 

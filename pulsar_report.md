@@ -1,14 +1,36 @@
 # Side-Channel Pulsar Analysis
 
+## Table of Contents
+
+1. [Introduction](#introduction)
+   - [What is a SCA?](#what-is-a-side-channel-attack)
+   - [Project Goals](#project-goals)
+2. [Project Overview](#project-overview)
+   - [Signal Scrambling and Descrambling Methods](#signal-scrambling-and-descrambling-methods)
+   - [Autocorrelation Leakage](#autocorrelation-leakage)
+   - [Spectral Fingerprinting](#spectral-fingerprinting)
+   - [Envelope Detection](#envelope-detection)
+   - [Seed Recovery/Brute-Force Attack](#seed-recovery)
+3. [Takeaways](#takeaways)
+4. [References](#references)
+
 ## Introduction
 
 ### What is a Side-Channel Attack?
 
-- 
-  
+- **Side-Channel Attacks** (SCA) are noninvasive attacks that target the implementation of a cryptographic algorithm instead of exploiting statistical/mathematical weaknesses. SCAs are divided into two main categories: Active Attacks and Passive Attacks.
+- **Active Attacks** include fault injections such as EM interference, laser glitching, and clock pin tampering. The goal of these attacks is to use side channel techniques to alter the behavior of a device, such as making the device skip instructions or reveal secret information.
+- **Passive Attacks** exploit physical information leaking from various channels/sources including power consumption, time taken for a computation, and electromagnetic (EM) radiation. The goal of these attacks is to use side channel techniques to expose device secrets. For example, if a device consumes more power computing a `1` compared to a `0`, monitoring power usage can easily expose information and extract the secret key of the cipher.
+- This project focuses on **passive electromagnetic side-channel attacks.** EM SCA focuses on measuring electromagnetic waves emitted from integrated circuits (ICs) during operation. EM waves are produced as current flows across a device, oftentimes where transistor and switching activities occur with changing inputs in turn will generate the most EM signals. EM emanations can be both intentional and unintentional.
+- **Intentional EM emanations** are from current flowing, with sharp rising edges. These are observable across full frequency bands. With these emanations, the EM response of the critical data path is attempted to be isolated, typically by targeting a higher frequency band with a small and senstive EM probe.
+- **Unintentional EM emanations** are produced by electric and electromagnetic coupling between components, which is a phenomenon that can generate a comprimising signal within ICs. Coupled components can generate signals that are modulated, either with amplitude and frequency, depending on the component.
+- **Simple EM Analysis** (SEMA) is when an attacker obtains a single time domain trace to directly gain knowledge about the device. SEMA can only work when an attacker has prior knowledge about the device, and an individual attempts to obtain critical information- oftentimes a sequence of transitions at startup on a device can include information about device secrets.
+- **Differential EM Analysis** (DEMA) is when an attacker exploits information that is not visually observable. Oftentimes, this involves using a self-referencing approach where an analyzed signal is compared with the signal at a different time or location on the device. This type of analysis can be done when an attacker does not know much about a device, and can expose how a signal propagates in a device and identify functional and structural details in a device. The exposed information can help reverse engineer the device or assist in providing information to disable security policies within systems.
+- **EM SCA Countermeasures** include shielding ICs and improving circuit designs to reduce the coupling so that unintentional emanations are reduced. Additionally, by having devices compute dummy bits, attackers can struggle to differentiate between critical data and dummy bits in the event of a successful EM SCA.
+
 ### Project Goals
 
-- **Pulsar signals** are periodic electromagnetic pulses from rotating neutron stars. This behavior reveals patterns in high noise environments, and can be an effective model in understanding side-channel techniques.
+- **Pulsar signals** are periodic electromagnetic pulses from rotating neutron stars. This behavior displays patterns in high noise environments, and can be an effective model in understanding simple EM side-channel techniques.
 - The primary [objectives](#takeaways) of this project are as follows:
 	1. What techniques can detect data leakage in signals?
 	2. How does scrambling level and the SNR affect pulsar data leakage?
@@ -50,7 +72,7 @@
 
 ---
 
-### Seed Recovery / Brute-Force Attack
+### Seed Recovery
 
 #### Goal
 
@@ -61,43 +83,70 @@
 
 #### Method
 
-1.**Leakage Pre-Analysis:** 
+1. **Leakage Pre-Analysis:**
     - Evaluated leakage metrics on the scrambled signal.
     - The envelope contained the most preserved structure, so envelope correlation became a key scoring component.
     - FFT and PSD ratios were selected as the main spectral fingerprints.
     - Final scoring strategy was defined as: `score = (PSD ratio + log‑scaled FFT ratio) × envelope correlation coefficient`
+	
 2. **Loop Design:**
-    - Nested exhaustively searches `scrambling levels` × `candidate seeds.`
+    - Nested exhaustive searches: `scrambling levels` × `candidate seeds.`
+    
 3. **Seed Trials:**
     - The scrambled signal was descrambled with the guessed seed. 
     - Output was normalized.
+      
 4. **Envelope Matching:**
     - The envelope of the descrambled signal had its correlation coefficient compared to the envelope of the scrambled signal.
     - A value close to `1.0` indicated similar peak structure and helped reject high spectral ratios that were not preserving the original signal's leakage.
+    
 5. **Spectral Ratio Scoring:** 
     - Computed the `FFT Ratio` and `PSD Ratio`.
     - FFT Ratio was scaled loarithmically to normalize it.
     - Descrambled signals with the highest FFT and PSD ratios hinted towards the best reconstruction of the original signal.
+      
 6. **Noise Thresholding:** 
-    - Applied fast Pre-Filters:
+    - Applied fast pre-filters:
 	    - The FFT, PSD, Envelope median were multiplied by a constant for scaling across noises
 		- If the envelope, FFT, or PSD values were outside observed sane ranges, seed was skipped or rejected.
 	- This reduced false positives by ensuring sure a seed scored well across all tests, and slightly improved runtime.
 
 #### Results
 
-Multiple batches of small sets of seeds (2^12 to 2^16 possible seeds) were tested. The scoring function showed a **consistent bias toward the correct seed** across noise and scrambling changes. Even when collisions occurred (different seed, similar decoded output), **the true seed always appeared in the Top‑5 candidates.**
+Multiple batches of small sets of seeds (2^12 to 2^16 possible seeds) were tested. The scoring function showed a **consistent bias toward the correct seed** across noise and scrambling changes, until the seed set became too large. Even when collisions occurred (different seed, similar decoded output), **the true seed always appeared in the Top‑5 candidates** in small sets. Sets at or below 2^15 can successfully be brute forced, while sets greater than 2^15 present too many seed collisions.
 
 An interesting note is that before implementing noise thresholding, Top‑1 & Top‑5 accuracy hovered around 50–75%, especially failing under high noise. After thresholding, Top‑5 accuracy reached 100%, showing that **thresholding corrected mis‑weighted spectral scores inflated by noise.**
 
 Additionally, the speed of the brute force mechanism is slow. Some potential improvements would be improving speed by using MATLAB instead of Octave, as a lot of the brute force tasks could be parallelized, and MATLAB's parallelization performance is better. Using `parfor` for the brute force loops would greatly reduce runtime. 
 
-##### Test 1 Results: 4096 Possible Seeds on the Same Signal of Varying Noise
+##### Test 1 Results: 2048 Possible Seeds on the Same Signal of Varying Noise
 
 ```bash
-------------------------------------------------------------
-                   4096 POSSIBLE SEEDS
-------------------------------------------------------------
+Attack Summary:
+Total Sets Brute Forced        : 15
+Range of Seeds Guessed         : 1-2048
+Successful Recoveries          : 15 (100.00%)
+Average Brute-Force Time       : 128.1219 sec
+
+Accuracy Metrics:
+Top 1 Accuracy                 : 100.00%
+Top 5 Accuracy                 : 100.00%
+
+Seed Recovery Success Rate per Scramble Level:
+ Weak   : 100.00%
+ Medium : 100.00%
+ Strong : 100.00%
+Seed Recovery Success Rate per Noise Level:
+ Clean  : 100.00%
+ Low Noise : 100.00%
+ Small Noise : 100.00%
+ Medium Noise : 100.00%
+ High Noise : 100.00%
+ ```
+
+##### Test 2 Results: 4096 Possible Seeds on the Same Signal of Varying Noise
+
+```bash
 Attack Summary:
 Total Sets Brute Forced        : 15
 Range of Seeds Guessed         : 1-4096
@@ -120,17 +169,41 @@ Seed Recovery Success Rate per Noise Level:
  High Noise : 100.00%
  ```
 
-##### Test 2 Results: 65,536 Possible Seeds on the Same Signal of Varying Noise
+##### Test 3 Results: 8,192 Possible Seeds on the Same Signal of Varying Noise
 
+```bash
 
+```
 
-##### Test 3 Results: 4096 Possible Seeds on the Varying Pulsar Signals with Low Noise
+##### Test 4 Results: 16,384 Possible Seeds on the Same Signal of Varying Noise
 
+```bash
 
+```
 
-##### Test 4 Results: 4096 Possible Seeds on the Varying Pulsar Signals with Medium Noise
+##### Test 5 Results: 32,768 Possible Seeds on the Same Signal of Varying Noise
 
+```bash
 
+```
+
+##### Test 6 Results: 65,536 Possible Seeds on the Same Signal of Varying Noise
+
+```bash
+
+```
+
+##### Test 7 Results: 4096 Possible Seeds on the Varying Pulsar Signals with Low Noise
+
+```bash
+
+```
+
+##### Test 8 Results: 4096 Possible Seeds on the Varying Pulsar Signals with Medium Noise
+
+```bash
+
+```
 
 ---
 
@@ -151,3 +224,7 @@ When the seed space is small, an attacker could often recover the correct seed a
 For a single threaded process, brute forcing 2^16 seeds required approximately 40 minutes. **A more cryptographically significant number, such as 2^128 seeds, would take about 0.4 nonillion years to brute force!** Even if this system was parallelized, that would still be an **computationally infeasible** scale. At this magnitude, the amount of false-positive seed collisions also increases, raising the possiblity that the Top-5 candidates may not include the correct seed. 
 
 In modern cryptography, this same principle is mirrored: **Sufficiently large key sizes make it computationally infeasible to determine the encryption key through brute‑force, even when the attacker has access to the encrypted data.** Once the number of possible keys becomes extremely large, key recovery by exhaustive search is no longer a practical attack vector.
+
+## References
+
+- Bhunia, Swarup, Mark Tehranipoor. *Hardware Security: A Hands On Learning Approach.* Elsevier Incorporated, 2019.

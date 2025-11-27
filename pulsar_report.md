@@ -12,6 +12,9 @@
    - [Envelope Detection](#envelope-detection)
    - [Seed Recovery/Brute-Force Attack](#seed-recovery)
 3. [Takeaways](#takeaways)
+   - [What techniques can detect data leakage in signals?](#what-techniques-can-detect-data-leakage-in-signals)
+   - [How does scrambling level and the SNR affect pulsar data leakage?](#how-does-scrambling-level-and-the-snr-affect-pulsar-data-leakage)
+   - [Can an attacker determine the seed used to obfuscate the signal?](#can-an-attacker-determine-the-seed-used-to-obfuscate-the-signal)
 4. [References](#references)
 
 ## Introduction

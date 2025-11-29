@@ -523,14 +523,6 @@ Seed Recovery Success Rate per Noise Level:
 </details>
 
 <details>
-<summary>Show Test 5 Results: 65,536 Possible Seeds on the Same Signal of Varying Noise</summary>
-
-```bash
-
-```
-</details>
-
-<details>
 <summary>Show Test 6 Results: 4,096 Possible Seeds on the Varying Pulsar Signals with Low Noise</summary>
 
 ```bash
@@ -579,14 +571,6 @@ Seed Recovery Success Rate per Noise Level:
  0.5 Pulse : 100.00%
  Closer Pulses : 100.00%
  Sparser Pulses : 100.00%
-```
-</details>
-
-<details>
-<summary>Show Test 8 Results: 65,536 Possible Seeds on the Varying Pulsar Signals with Medium Noise</summary>
-	
-```bash
-
 ```
 </details>
 

@@ -21,7 +21,7 @@
 
 ### Project Goals
 
-- **Pulsar signals** are periodic electromagnetic pulses from rotating neutron stars. This behavior displays patterns in high noise environments, and can be an effective model in understanding simple EM side-channel techniques.
+- **Pulsar signals** are periodic electromagnetic (EM) pulses from rotating neutron stars. This behavior displays patterns in high noise environments, and can be an effective model in understanding simple EM side-channel techniques.
 - The primary [objectives](#takeaways) of this project are as follows:
 	1. What techniques can detect data leakage in signals?
 	2. How does scrambling level and the SNR affect pulsar data leakage?
@@ -529,13 +529,53 @@ Seed Recovery Success Rate per Noise Level:
 ##### Test 6 Results: 4096 Possible Seeds on the Varying Pulsar Signals with Low Noise
 
 ```bash
+Attack Summary:
+Total Sets Brute Forced        : 12
+Range of Seeds Guessed         : 1-4096
+Successful Recoveries          : 12 (100.00%)
+Average Brute-Force Time       : 624.5926 sec
 
+Accuracy/Error Metrics:
+Top 1 Accuracy                 : 100.00%
+Top 5 Accuracy                 : 100.00%
+Mean Absolute Error (MAE)      : 0.000
+Root Mean Square Error (RMSE)  : 0.000
+
+Seed Recovery Success Rate per Scramble Level:
+ Weak   : 100.00%
+ Medium : 100.00%
+ Strong : 100.00%
+Seed Recovery Success Rate per Noise Level:
+ 1 Pulse : 100.00%
+ 0.5 Pulse : 100.00%
+ Closer Pulses : 100.00%
+ Sparser Pulses : 100.00%
 ```
 
 ##### Test 7 Results: 4096 Possible Seeds on the Varying Pulsar Signals with Medium Noise
 
 ```bash
+Attack Summary:
+Total Sets Brute Forced        : 12
+Range of Seeds Guessed         : 1-4096
+Successful Recoveries          : 12 (100.00%)
+Average Brute-Force Time       : 627.8566 sec
 
+Accuracy/Error Metrics:
+Top 1 Accuracy                 : 100.00%
+Top 5 Accuracy                 : 100.00%
+Mean Absolute Error (MAE)      : 0.000
+Root Mean Square Error (RMSE)  : 0.000
+
+Seed Recovery Success Rate per Scramble Level:
+ Weak   : 100.00%
+ Medium : 100.00%
+ Strong : 100.00%
+Seed Recovery Success Rate per Noise Level:
+ 1 Pulse : 100.00%
+ 0.5 Pulse : 100.00%
+ Closer Pulses : 100.00%
+ Sparser Pulses : 100.00%
 ```
 
 ##### Test 8 Results: 65,536 Possible Seeds on the Varying Pulsar Signals with Medium Noise
@@ -550,11 +590,21 @@ Seed Recovery Success Rate per Noise Level:
 
 ### What techniques can detect data leakage in signals?
 
+Time-domain inspection is the simplest method. In low-noise environments, periodic signals such as pulsars are often clearly visible, even when obfuscated. When block-based scrambling is applied, blocks containing repeated or highly similar content can leave distinct visual patterns, which an observer may exploit to infer structure.
 
+Autocorrelation analysis aims to detect periodicity, but in sparse signals such as the pulsars analyzed, autocorrelation performs poorly and produced unstable metrics. This means it may fail to reveal meaningful leakage. On the other hand, frequency-domain techniques were extremely effective in this application, due to the periodic nature of these signals. By examining the Fourier Tranform and Power Spectral Density, it was possible to identify dominant frequency components that would often persist after time-based scrambling. This would allow attackers to detect leakage if time-domain methods fail.
+
+Lastly, by computing the analytic signal of a pulsar-like waveform using the Hilbert transform and obtaining signal’s envelope, amplitude variations were highlighted over time. The envelope essentially smoothed out the signal, which improved metrics of other signal analysis techniques within this application.
+
+Side-channel analysis can extend these ideas to cases where the attacker has limited knowledge of the system. Without access to internal device architecture, observation of signal patters in the time-domain, correlations and envelopes, or frequency signatures can reveal exploitable structures.
 
 ### How does scrambling level and the SNR affect pulsar data leakage?
 
-The scrambling level had minimal effect on the pulsar data leakage.
+Increaing the amount of scrambling only slightly reduced detectable leakage in the pulsar signals. Even with the strongest scrambling, the underlying periodic structure was visible. As the scrambling was based in the time domain, and the signal was scrambled in small chunks, the signal's structure was not modified significantly enough to reduce detectable leakage. By implementing stronger scrambling that modifies the true shape of the signal, there would be less signal information leakage.
+
+On the other hand, the signal-to-noise ratio (SNR) had a more significant effect on leakage detection. Low SNR pulsar signals suppressed peak contrast across time and frequency domain metrics, which reduced the effectiveness of brute-force seed matching and leakage metrics.
+
+This is where good circuit design comes into play as a defense against SCAs. By reducing ambient SNR for side-channels, there is a reduced risk in exposing senstive information on devices.
 
 ### Can an attacker determine the seed used to obfuscate the signal?
 

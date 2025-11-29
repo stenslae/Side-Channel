@@ -51,47 +51,66 @@
 
 #### Method
 
+- **Autocorrelation** measures how similar a signal is to the delayed copy of itself.
+- The autocorrelation ratio is defined as the maximum value of the signal’s autocorrelation function divided by the median value of the autocorrelation function, which serves as a typical baseline correlation level across non-periodic lags.
+- In this application, the autocorrelation ratio can would reveal periodicity, since strongly periodic signals produce pronounced peaks in autocorrelation, raising the maximum relative to the median background level.
+- The lag at which the maximum autocorrelation occurs was defined as **Peak Time,** representing the delay distance where signal values are most similar.
+
 #### Results
+
+- The leakage metrics derived from autocorrelation were poor. The autocorrelation peak occurred near zero lag, indicating that the pulsars were not detected. Instead, regions dominated by zeros or noise produced the strongest correlation.
+- The extremely high autocorrelation at zero lag artificially inflated the autocorrelation ratio, causing misleadingly high leakage scores.
 
 ```bash
 LEAKAGE PER SCRAMBLING:
 
   --- Weak   Scramble ---
-    Autocorr ratio:  raw 57.6587 → scr 60.1267
+    Autocorr Ratio:  raw 57.6587 → scr 1044.9951
+    Peak Time:       raw -0.2297 → scr -0.1298
 
   --- Medium Scramble ---
-    Autocorr ratio:  raw 57.6587 → scr 59.7550
+    Autocorr Ratio:  raw 57.6587 → scr 1109.3901
+    Peak Time:       raw -0.2297 → scr -0.1298
 
   --- Strong Scramble ---
-    Autocorr ratio:  raw 57.6587 → scr 59.7550
+    Autocorr Ratio:  raw 57.6587 → scr 1109.3901
+    Peak Time:       raw -0.2297 → scr -0.1298
 
 LEAKAGE PER SNR:
 
   --- Clean  Scramble ---
-    Autocorr ratio:  raw 124.4321 → scr 38.6938
+    Autocorr ratio:  raw 124.4321 → scr 4243.4494
+    Peak Time:       raw -0.0010 → scr -0.0010
 
   --- Small Noise Scramble ---
-    Autocorr ratio:  raw 89.6477 → scr 75.4846
+    Autocorr ratio:  raw 89.6477 → scr 90.5435
+    Peak Time:       raw -0.0010 → scr -0.0010
 
   --- Medium Noise Scramble ---
-    Autocorr ratio:  raw 9.1464 → scr 63.1983
+    Autocorr ratio:  raw 9.1464 → scr 8.8272
+    Peak Time:       raw -0.7030 → scr -0.0030
 
   --- Large Noise Scramble ---
-    Autocorr ratio:  raw 7.4088 → scr 62.1391
+    Autocorr ratio:  raw 7.4088 → scr 8.8803
+    Peak Time:       raw -0.2140 → scr -0.5140
 
 LEAKAGE PER SIGNAL TYPE:
 
   --- 1 Pulse Scrambled ---
-    Autocorr ratio:  raw 154.7263 → scr 200.9439
+    Autocorr ratio:  raw 147.2793 → scr 187.7847
+    Peak Time:       raw -0.7000 → scr -0.0010
 
   --- 0.5 Pulse Scrambled ---
-    Autocorr ratio:  raw 82.7742 → scr 79.6430
+    Autocorr ratio:  raw 86.3595 → scr 75.3490
+    Peak Time:       raw -0.7000 → scr -0.0010
 
   --- Closer Pulses Scrambled ---
-    Autocorr ratio:  raw 79.4739 → scr 275.2745
+    Autocorr ratio:  raw 78.7259 → scr 266.4291
+    Peak Time:       raw -0.4000 → scr -0.0010
 
   --- Sparser Pulses Scrambled ---
-    Autocorr ratio:  raw 106.2562 → scr 97.1022
+    Autocorr ratio:  raw 109.2674 → scr 99.2498
+    Peak Time:       raw -0.9000 → scr -0.0010
 ```
 
 ---
@@ -174,7 +193,7 @@ LEAKAGE PER SIGNAL TYPE:
 
 - The advantage of enveloping the signal was consistent across all scrambling levels, while noise reduced the advantage. But, in high noise environments, spectral analysis effectiveness dropped substantially regardless of envelope processing.
 
-- Autocorrelation was shown to be significiantly less effective as a leakage indicator. This could be due to autocorrelation being less effective in pulsar detection, as pulsars are too sparse for autocorrelation to detect a correlation.
+- Autocorrelation were measured to have a much smaller autocorrelation than the scrambled leakage. This could be due to autocorrelation being less effective in pulsar detection, as pulsars are too sparse for autocorrelation to detect a correlation.
 
 ![Envelope Heatmap](outputs/envelope_advantage.jpg)
 
@@ -503,6 +522,12 @@ Seed Recovery Success Rate per Noise Level:
 ```
 
 ##### Test 7 Results: 4096 Possible Seeds on the Varying Pulsar Signals with Medium Noise
+
+```bash
+
+```
+
+##### Test 8 Results: 65,536 Possible Seeds on the Varying Pulsar Signals with Medium Noise
 
 ```bash
 

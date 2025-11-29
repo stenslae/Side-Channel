@@ -22,7 +22,7 @@
 ### Project Goals
 
 - **Pulsar signals** are periodic electromagnetic (EM) pulses from rotating neutron stars. Naturally, I decided to attack simulated ones using EM side‑channel analysis and a brute‑force seed recovery approach. Because pulsars are basically beacon signals with absurd periodicity, brute‑forcing them is easier than explaining what neutron stars are.
-- **In this project, the side-channel is the simpulated pulsar emissions, and the ‘target device’ is the scrambling algorithm applied to it.**
+- **In this project, the side-channel is the simulated pulsar emissions, and the ‘target device’ is the scrambling algorithm applied to it.**
 - The primary [objectives](#takeaways) of this project are as follows:
 	1. What techniques can detect data leakage in signals?
 	2. How does scrambling level and SNR affect pulsar signal leakage?
@@ -40,7 +40,7 @@
 
 - There are multiple techniques/strategies used by attackers to determine secrets in EM signals.
 	- **Simple EM Analysis** (SEMA) uses one time-domain trace to directly gain knowledge about the device. SEMA can only work when an attacker has prior knowledge about the device. Oftentimes, startup patterns on a device include information about device secret keys.
-	- **Differential EM Analysis** (DEMA) extracts non-visible information from the device, which is especially useful for unknown devices. This involves using a self-referencing approach where an analyzed signal is compared with the signal at a different time or location on the device. DEMA exposes how signals propagate and the internal strcutural details of a device, which can assist in reverse engineering devices.
+	- **Differential EM Analysis** (DEMA) extracts non-visible information from the device, which is especially useful for unknown devices. This involves using a self-referencing approach where an analyzed signal is compared with the signal at a different time or location on the device. DEMA exposes how signals propagate and the internal structural details of a device, which can assist in reverse engineering devices.
 
 - **EM SCA Countermeasures** include IC shielding, reducing circuit coupling, and adding noise such as dummy computations to hide real data.
 

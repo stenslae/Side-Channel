@@ -13,29 +13,29 @@
    - [Seed Recovery/Brute-Force Attack](#seed-recovery)
 3. [Takeaways](#takeaways)
    - [What techniques can detect data leakage in signals?](#what-techniques-can-detect-data-leakage-in-signals)
-   - [How does scrambling level and the SNR affect pulsar data leakage?](#how-does-scrambling-level-and-the-snr-affect-pulsar-data-leakage)
-   - [Can an attacker determine the seed used to obfuscate the signal?](#can-an-attacker-determine-the-seed-used-to-obfuscate-the-signal)
+   - [How does scrambling level and the SNR affect pulsar signal leakage?](#how-does-scrambling-level-and-the-snr-affect-pulsar-signal-leakage)
+   - [Can an attacker recover the obfuscation seed?](#can-an-attacker-recover-the-obfuscation-seed)
 4. [References](#references)
 
 ## Introduction
 
 ### Project Goals
 
-- **Pulsar signals** are periodic electromagnetic (EM) pulses from rotating neutron stars. This behavior displays patterns in high noise environments, and can be an effective model in understanding simple EM side-channel techniques.
+- **Pulsar signals** are periodic electromagnetic (EM) pulses from rotating neutron stars. Naturally, I decided to attack simulated ones using EM side‑channel analysis and a brute‑force seed recovery approach. Because pulsars are basically beacon signals with absurd periodicity, brute‑forcing them is easier than explaining what neutron stars are. In this work, the side-channel is the pulsar emission itself, and the ‘target device’ is the scrambling algorithm applied to it.
 - The primary [objectives](#takeaways) of this project are as follows:
 	1. What techniques can detect data leakage in signals?
-	2. How does scrambling level and the SNR affect pulsar data leakage?
-	3. Can an attacker determine the seed used to obfuscate the signal?
+	2. How does scrambling level and SNR affect pulsar signal leakage?
+	3. Can an attacker recover the obfuscation seed?
 
 ### What is a Side-Channel Attack?
 
-- **Side-Channel Attacks (SCA) are noninvasive attacks that target the implementation of a cryptographic algorithm instead of exploiting statistical/mathematical weaknesses.**
+- **Side-Channel Attacks (SCA) are noninvasive attacks that target how a cryptographic system works, rather than breaking math directly.**
 	- **Active Attacks** include fault injections such as EM interference, laser glitching, and clock pin tampering. The goal of these attacks is to use side channel techniques to alter the behavior of a device, such as making the device skip instructions or reveal secret information. 
 	- **Passive Attacks** observe information a device unintentionally leaks through power usage, timing, or EM signals. The goal of these attacks is to use side channel techniques to expose device secrets.
 
 - This project focuses on passive electromagnetic (EM) SCAs, which measure EM emissions from integrated circuits (ICs) during operation. EM signals are strongest where current switches rapidly, especially during transistor activity.
-	- **Intentional EM emanations** come from normal current flow and are observable across full frequency bands. Attackers try to isolate the data path using a small, sensitive EM probes at higher frequencies.
- 	- **Unintentional EM emanations** result from electrical/EM coupling between components, which generates modulated signals that may reveal internal behavior.
+	- **Intentional EM emanations** come from normal current flow, visible across frequency bands. Hackers try to isolate the data path using tiny, super-sensitive EM probes.
+ 	- **Unintentional EM emanations** result from electrical coupling between components, which generate modulated signals that can reveal internal behavior.
 
 - There are multiple techniques/strategies used by attackers to determine secrets in EM signals.
 	- **Simple EM Analysis** (SEMA) uses one time-domain trace to directly gain knowledge about the device. SEMA can only work when an attacker has prior knowledge about the device. Oftentimes, startup patterns on a device include information about device secret keys.
@@ -58,10 +58,13 @@
 
 #### Results
 
-- The leakage metrics derived from autocorrelation were poor. The autocorrelation peak occurred near zero lag, indicating that the pulsars were not detected. Instead, regions dominated by zeros or noise produced the strongest correlation.
+- Autocorrelation tried to detect leakage, and failed spectacularly. The autocorrelation peak occurred near zero lag, indicating that the pulsars were not detected. Instead, regions dominated by zeros or noise produced the strongest correlation.
 - The extremely high autocorrelation at zero lag artificially inflated the autocorrelation ratio, causing misleadingly high leakage scores.
 - For future improvement, being stricter at removing peaks around zero could result in helpful autocorrelation metrics.
 
+<details>
+<summary>Show Autocorrelation Leakage Results</summary>
+	
 ```bash
 LEAKAGE PER SCRAMBLING:
 
@@ -113,6 +116,7 @@ LEAKAGE PER SIGNAL TYPE:
     Autocorr ratio:  raw 109.2674 → scr 99.2498
     Peak Time:       raw -0.9000 → scr -0.0010
 ```
+</details>
 
 ---
 
@@ -128,11 +132,12 @@ LEAKAGE PER SIGNAL TYPE:
 
 - Spectral fingerprinting successfully revealed leakage from pulsar periodicity. Both FFT ratio and PSD ratio increased significantly after scrambling, confirming that periodic structure remained detectable in the frequency domain. As the scrambling was altered within the time domain using linear transformations, scrambling has little effect on the FFT and PSD ratios.
 
-- Noise significantly reduced peak contrast for spectral fingerprinting, which reduced leakage metrics.
+- Noise, unsuprisingly, significantly reduced peak contrast for spectral fingerprinting, which reduced leakage metrics.
 
 - Unlike autocorrelation, these spectral ratios remained stable for pulsars because the median reflects the spectral noise floor, instead of the zero-valued gaps between pulses.
 
-![Leakage Heatmap](outputs/leakage_heatmap.jpg)
+<details>
+<summary>Show Spectral Leakage Results</summary>
 
 ```bash
 LEAKAGE PER SCRAMBLING:
@@ -185,6 +190,9 @@ LEAKAGE PER SIGNAL TYPE:
     FFT ratio:       raw 12.3007 → scr 5.8656
     PSD ratio:       raw 5.2453 → scr 4.3928
 ```
+</details>
+
+![Leakage Heatmap](outputs/leakage_heatmap.jpg)
 
 ---
 
@@ -195,7 +203,7 @@ LEAKAGE PER SIGNAL TYPE:
 - **Enveloping** is a process that smooths signals and outlines its extremes.
 - The **Hilbert transform** phase shifts a signal by 90 degrees. When the raw signal is added to the Hilbert transform, this creates the **analytic signal.** The analytic signal quantifies how much the signal rotates over time.
 - The amplitude of the analytic signal was used as the envelope, capturing instantaneous amplitude independent from phase.
-- This method does not remove noise, but it reduces visible oscilations in the envelope because phase cancels out when calculating magnitude.
+- This method does not remove noise, but it reduces visible oscillations in the envelope because phase cancels out when calculating magnitude.
 - Because peak amplitudes are preserved while phase variations are ignored, periodic energy leakage becomes easier to detect in spectral analysis.
 
 #### Results
@@ -204,9 +212,10 @@ LEAKAGE PER SIGNAL TYPE:
 
 - The advantage of enveloping the signal was consistent across all scrambling levels, while noise reduced the advantage. But, in high noise environments, spectral analysis effectiveness dropped substantially regardless of envelope processing.
 
-- Autocorrelation were measured to have a much smaller autocorrelation than the scrambled leakage. This could be due to autocorrelation being less effective in pulsar detection, as pulsars are too sparse for autocorrelation to detect a correlation.
+- Autocorrelation was still useless, though. This is due to autocorrelation being less effective in pulsar detection, as pulsars are too sparse for autocorrelation to detect anything.
 
-![Envelope Heatmap](outputs/envelope_advantage.jpg)
+<details>
+<summary>Show Envelope Leakage Results</summary>
 
 ```bash
 LEAKAGE PER SCRAMBLING:
@@ -303,6 +312,9 @@ ENVELOPE ADVANTAGE PER SIGNAL TYPE:
     Autocorr Env advantage:  Δ = 18.9280
     PSD Env advantage:       Δ = 19.3506
 ```
+</details>
+
+![Envelope Heatmap](outputs/envelope_advantage.jpg)
 
 - Additionally, direct waveform inspection showed that the enveloped obfuscated signal still had distinguishable pulsar peaks across all tested SNR and scrambling conditions:
   
@@ -344,11 +356,11 @@ ENVELOPE ADVANTAGE PER SIGNAL TYPE:
 - Scrambled signal variants were compared against both raw and enveloped signals:
 ![Signal Comparisons](outputs/signal_compare2.jpg)
 
-- The scrambling approach was found to be moderately effective, but relatively weak for highly periodic signals such as pulsars, whose regular structure can still be revealed through visual inspection and spectral analysis.
+- The scrambling tried its best, but the pulsars were not having it. Even scrambled the signals periodic structure can still be revealed through visual inspection and spectral analysis.
 
 - In the time domain, particularly under high-noise conditions, scrambling more successfully obscured the original signal's structure.
 
-- Although scrambling did not fully mask periodicity, it reduced spectral detection strength and partially degraded frequency-domain analysis, indicating that the method could still serve as a lightweight obfuscation layer in noisy environments.
+- Although scrambling did not fully mask periodicity, it slightly reduce spectral detection strength, indicating that the method could still serve as a lightweight obfuscation layer in noisy environments.
 
 ---
 
@@ -382,7 +394,7 @@ ENVELOPE ADVANTAGE PER SIGNAL TYPE:
     
 5. **Spectral Ratio Scoring:** 
     - Computed the `FFT Ratio` and `PSD Ratio`.
-    - Ratios were scaled loarithmically to normalize then.
+    - Ratios were scaled logarithmically to normalize then.
     - Descrambled signals with the highest FFT and PSD ratios hinted towards the best reconstruction of the original signal.
       
 6. **Noise Thresholding:** 
@@ -399,9 +411,10 @@ Multiple batches of small sets of seeds (2^11 to 2^16 possible seeds) were teste
 
 An interesting note is that before implementing noise thresholding, Top‑1 & Top‑5 accuracy hovered around 50–75%, especially failing under high noise. After thresholding, Top‑5 accuracy reached 100%, showing that **thresholding corrected mis‑weighted spectral scores inflated by noise.**
 
-Additionally, the speed of the brute force mechanism is slow. Some potential improvements would be improving speed by using MATLAB instead of Octave, as a lot of the brute force tasks could be parallelized, and MATLAB's parallelization performance is better. Using `parfor` for the brute force loops would greatly reduce runtime. 
+Additionally, the speed of the brute force mechanism is slow enough to provide a week-long stress test for your CPU. Some potential improvements would be improving speed by using MATLAB instead of Octave, as a lot of the brute force tasks could be parallelized, and MATLAB's parallelization performance is better. Using `parfor` for the brute force loops would greatly reduce runtime... (Yes, I learned that after doing 90% of my testing)
 
-##### Test 1 Results: 2048 Possible Seeds on the Same Signal of Varying Noise
+<details>
+<summary>Show Test 1 Results: 2,048 Possible Seeds on the Same Signal of Varying Noise</summary>
 
 ```bash
 Attack Summary:
@@ -425,8 +438,10 @@ Seed Recovery Success Rate per Noise Level:
  Medium Noise : 100.00%
  High Noise : 100.00%
  ```
+</details>
 
-##### Test 2 Results: 4096 Possible Seeds on the Same Signal of Varying Noise
+<details>
+<summary>Show Test 2 Results: 4,096 Possible Seeds on the Same Signal of Varying Noise</summary>
 
 ```bash
 Attack Summary:
@@ -450,8 +465,10 @@ Seed Recovery Success Rate per Noise Level:
  Medium Noise : 100.00%
  High Noise : 100.00%
  ```
+</details>
 
-##### Test 3 Results: 8,192 Possible Seeds on the Same Signal of Varying Noise
+<details>
+<summary>Show Test 3 Results: 8,192 Possible Seeds on the Same Signal of Varying Noise</summary>
 
 ```bash
 Attack Summary:
@@ -475,8 +492,10 @@ Seed Recovery Success Rate per Noise Level:
  Medium Noise : 100.00%
  High Noise : 100.00%
 ```
+</details>
 
-##### Test 4 Results: 32,768 Possible Seeds on the Same Signal of Varying Noise
+<details>
+<summary>Show Test 4 Results: 32,768 Possible Seeds on the Same Signal of Varying Noise</summary>
 
 ```bash
 Attack Summary:
@@ -500,8 +519,10 @@ Seed Recovery Success Rate per Noise Level:
  Medium Noise : 100.00%
  High Noise : 100.00%
 ```
+</details>
 
-##### Test 5 Results: 65,536 Possible Seeds on the Same Signal of Varying Noise
+<details>
+<summary>Show Test 5 Results: 65,536 Possible Seeds on the Same Signal of Varying Noise</summary>
 
 ```bash
 Attack Summary:
@@ -525,8 +546,10 @@ Seed Recovery Success Rate per Noise Level:
  Medium Noise : 0.00%
  High Noise : 0.00%
 ```
+</details>
 
-##### Test 6 Results: 4096 Possible Seeds on the Varying Pulsar Signals with Low Noise
+<details>
+<summary>Show Test 6 Results: 4,096 Possible Seeds on the Varying Pulsar Signals with Low Noise</summary>
 
 ```bash
 Attack Summary:
@@ -538,8 +561,6 @@ Average Brute-Force Time       : 624.5926 sec
 Accuracy/Error Metrics:
 Top 1 Accuracy                 : 100.00%
 Top 5 Accuracy                 : 100.00%
-Mean Absolute Error (MAE)      : 0.000
-Root Mean Square Error (RMSE)  : 0.000
 
 Seed Recovery Success Rate per Scramble Level:
  Weak   : 100.00%
@@ -551,8 +572,10 @@ Seed Recovery Success Rate per Noise Level:
  Closer Pulses : 100.00%
  Sparser Pulses : 100.00%
 ```
+</details>
 
-##### Test 7 Results: 4096 Possible Seeds on the Varying Pulsar Signals with Medium Noise
+<details>
+<summary>Show Test 7 Results: 4,096 Possible Seeds on the Varying Pulsar Signals with Medium Noise</summary>
 
 ```bash
 Attack Summary:
@@ -564,8 +587,6 @@ Average Brute-Force Time       : 627.8566 sec
 Accuracy/Error Metrics:
 Top 1 Accuracy                 : 100.00%
 Top 5 Accuracy                 : 100.00%
-Mean Absolute Error (MAE)      : 0.000
-Root Mean Square Error (RMSE)  : 0.000
 
 Seed Recovery Success Rate per Scramble Level:
  Weak   : 100.00%
@@ -577,12 +598,15 @@ Seed Recovery Success Rate per Noise Level:
  Closer Pulses : 100.00%
  Sparser Pulses : 100.00%
 ```
+</details>
 
-##### Test 8 Results: 65,536 Possible Seeds on the Varying Pulsar Signals with Medium Noise
-
+<details>
+<summary>Show Test 8 Results: 65,536 Possible Seeds on the Varying Pulsar Signals with Medium Noise</summary>
+	
 ```bash
 
 ```
+</details>
 
 ---
 
@@ -596,23 +620,23 @@ Autocorrelation analysis aims to detect periodicity, but in sparse signals such 
 
 Lastly, by computing the analytic signal of a pulsar-like waveform using the Hilbert transform and obtaining signal’s envelope, amplitude variations were highlighted over time. The envelope essentially smoothed out the signal, which improved metrics of other signal analysis techniques within this application.
 
-Side-channel analysis can extend these ideas to cases where the attacker has limited knowledge of the system. Without access to internal device architecture, observation of signal patters in the time-domain, correlations and envelopes, or frequency signatures can reveal exploitable structures.
+Side-channel analysis can extend these ideas to cases where the attacker has limited knowledge of the system. Without access to internal device architecture, observation of signal patterns in the time-domain, correlations and envelopes, or frequency signatures can reveal exploitable structures.
 
-### How does scrambling level and the SNR affect pulsar data leakage?
+### How does scrambling level and the SNR affect pulsar signal leakage?
 
-Increaing the amount of scrambling only slightly reduced detectable leakage in the pulsar signals. Even with the strongest scrambling, the underlying periodic structure was visible. As the scrambling was based in the time domain, and the signal was scrambled in small chunks, the signal's structure was not modified significantly enough to reduce detectable leakage. By implementing stronger scrambling that modifies the true shape of the signal, there would be less signal information leakage.
+Increasing the amount of scrambling only slightly reduced detectable leakage in the pulsar signals. Even with the strongest scrambling, the underlying periodic structure was visible. As the scrambling was based in the time domain, and the signal was scrambled in small chunks, the signal's structure was not modified significantly enough to reduce detectable leakage. By implementing stronger scrambling that modifies the true shape of the signal, there would be less signal information leakage.
 
-On the other hand, the signal-to-noise ratio (SNR) had a more significant effect on leakage detection. Low SNR pulsar signals suppressed peak contrast across time and frequency domain metrics, which reduced the effectiveness of brute-force seed matching and leakage metrics.
+Interestingly, the signal-to-noise ratio (SNR) had a more significant effect on leakage detection. Low SNR pulsar signals suppressed peak contrast across time and frequency domain metrics, which reduced the effectiveness of brute-force seed matching and leakage metrics.
 
-This is where good circuit design comes into play as a defense against SCAs. By reducing ambient SNR for side-channels, there is a reduced risk in exposing senstive information on devices.
+This is where good circuit design comes into play as a defense against SCAs. By reducing ambient SNR for side-channels, there is a reduced risk in exposing sensitive information on devices.
 
-### Can an attacker determine the seed used to obfuscate the signal?
+### Can an attacker recover the obfuscation seed?
 
 When the seed space is small, an attacker could often recover the correct seed as the most likely (Top-1) candidate, regardless of the noise and scrambling levels. In some cases, a different seed generated a very similar descrambled output, which lowered Top-1 Accuracy. However, the system still achieved 100% Top‑5 accuracy, meaning the true seed consistently appeared among the five closest matches. With only 5 possible seeds, an attacker could do further analysis using other datasets to conclusively identify the seed.
 
-For a single threaded process, brute forcing 2^16 seeds required approximately 40 minutes. **A more cryptographically significant number, such as 2^128 seeds, would take about 0.4 nonillion years to brute force!** Even if this system was parallelized, that would still be an **computationally infeasible** scale. At this magnitude, the amount of false-positive seed collisions also increases, raising the possiblity that the Top-5 candidates may not include the correct seed. 
+For a single threaded process, brute-forcing 2^16 seeds took ~40 minutes. **But, a more significant number, such as 2^128 seeds, would take about 0.4 nonillion years to brute force!** That's sort of a long time. Even if this system was parallelized, that would still be a *computationally infeasible* scale. At that magnitude, the amount of false-positive seed collisions also increases, raising the possibility that the Top-5 candidates may not include the correct seed. 
 
-In modern cryptography, this same principle is mirrored: **Sufficiently large key sizes make it computationally infeasible to determine the encryption key through brute‑force, even when the attacker has access to the encrypted data.** Once the number of possible keys becomes extremely large, key recovery by exhaustive search is no longer a practical attack vector.
+In modern cryptography, this same principle is mirrored: *Sufficiently large key sizes make it computationally infeasible to determine the encryption key through brute‑force, even when the attacker has access to the encrypted data.* Once the number of possible keys becomes extremely large, key recovery by exhaustive search is no longer a practical attack vector.
 
 ## References
 

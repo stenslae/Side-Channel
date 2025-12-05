@@ -2,7 +2,7 @@
 
 A MATLAB/Octave framework for experimenting with signal leakage, scrambling, and side‑channel attacks on simulated pulsar‑like repeated pulse signals: [Full Report](pulsar_report.md)
 
-## 🧠 System Overview
+## System Overview
 
 | Feature | Implementation |
 |---|---|
@@ -12,7 +12,7 @@ A MATLAB/Octave framework for experimenting with signal leakage, scrambling, and
 | **Obfuscation Techniques** | Bit flipping, Amplitude shifting, Timing jitter |
 | **Attack Method** | Brute‑force seed scoring via combined spectral + temporal leakage + envelope correlation |
 
-## 🚀 Basic Usage
+## Basic Usage
 
 - Use the pre-made [driver.m](m_script/driver.m), or use it as below:
 
@@ -24,6 +24,6 @@ A MATLAB/Octave framework for experimenting with signal leakage, scrambling, and
 results = main_emma(noisy_sets, fs, t);
 ```
 
-## 💡 Acknowledgements
+## Acknowledgements
 
 - MATLAB/Octave Content was developed for a final project in EELE308 at MSU Bozeman.
